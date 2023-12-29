@@ -29,3 +29,4 @@ sqlparse
 tzdata
 virtualenv
 wheel
+dj_database_url
