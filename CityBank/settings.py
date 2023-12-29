@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CSRF_TRUSTED_ORIGINS = ['https://city-bank.onrender.com']
 ROOT_URLCONF = 'CityBank.urls'
 
 TEMPLATES = [
