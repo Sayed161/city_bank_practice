@@ -1,6 +1,7 @@
 from typing import Any
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+
 from .constant import ACCOUNT_TYPE,GENDER
 from .models import UserBankAccount,UserAddress
 from django import forms

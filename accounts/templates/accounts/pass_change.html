@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{%  load crispy_forms_tags %}
+{% block body %}
+
+
+<form style="width:50% ; margin : auto;color:black" method="post">
+    <h1 class="fs-5 fw-bolder text-black mt-5 ms-5">Change Your Password From Here</h1>
+<hr class="mt-5 mb-5">
+    {% csrf_token %}
+{{form | crispy}}
+
+<button class="btn btn-warning mb-5">Submit</button>
+</form>
+
+{% endblock %}
