@@ -17,12 +17,22 @@ from accounts.models import UserBankAccount
 # Create your views here.
 
 
-def send_transaction_email(user, amount, subject, template,from_user = None):
+def send_transaction_email(user, amount, subject, template):
         message = render_to_string(template, {
             'user' : user,
             'amount' : amount,
         })
-        send_email = EmailMultiAlternatives(subject, '', to=[from_user.email])
+        send_email = EmailMultiAlternatives(subject, '', to=[user.email])
+        send_email.attach_alternative(message, "text/html")
+        send_email.send()
+
+def send_email(user,reciver, amount, subject, template):
+        message = render_to_string(template, {
+            'user' : user,
+            'amount' : amount,
+            'reciver':reciver,
+        })
+        send_email = EmailMultiAlternatives(subject, '', to=[user.email,reciver])
         send_email.attach_alternative(message, "text/html")
         send_email.send()
 
@@ -199,8 +209,9 @@ class SentMoneyView(TransactionalMixin):
                 reciver_account.save(
                 update_fields = ['balance']
                 )
-                send_transaction_email(self.request.user, amount, "Sent", "sent_mail.html",reciver_account)
+                send_email(self.request.user,reciver_account.user.email, amount, "Sent money", "sent_mail.html")
                 messages.success(self.request,f"{amount} was sent to {reciver_ac} successfully")
             
         else:
                 messages.error(self.request,"you don't have sufficient balance to send")
+        return super().form_valid(form)
