@@ -35,7 +35,6 @@ class WithdrawForm(TransactionForm):
         min_withdraw_amount = 500
         max_withdraw_amount = 20000
         balance = account.balance # 1000
-        print(balance)
         amount = self.cleaned_data.get('amount')
         if amount < min_withdraw_amount:
             raise forms.ValidationError(
@@ -59,4 +58,16 @@ class LoanRequestForm(TransactionForm):
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
 
+        return amount
+    
+
+class SentForm(TransactionForm):
+    class Meta:
+        model = Transactions
+        fields= ['amount','transactions_type']
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+
+        if amount <= 0 :
+            raise forms.ValidationError('Amount must be greater than 0')
         return amount

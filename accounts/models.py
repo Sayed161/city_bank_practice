@@ -12,6 +12,7 @@ class UserBankAccount(models.Model):
     gender = models.CharField(max_length=15,choices=GENDER)	
     initial_deposit_date = models.DateTimeField(auto_now_add=True)
     balance = models.DecimalField(default=0,max_digits=12,decimal_places=2)
+    bank_rupt = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return str(self.account_no)

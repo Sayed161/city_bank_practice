@@ -10,6 +10,6 @@ class Transactions(models.Model):
     transactions_type = models.IntegerField(choices=TRANSACTION_TYPE,null = True)
     timestamp = models.DateTimeField(auto_now_add=True)
     loan_approve = models.BooleanField(default=False)
-
+    bank_rupt = models.BooleanField(default=False)
     class Meta:
         ordering = ['timestamp']

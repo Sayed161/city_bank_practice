@@ -5,7 +5,7 @@ from . models import Transactions
 # Register your models here.
 @admin.register(Transactions)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['account','amount',"balance_after_transaction","transactions_type","loan_approve"]
+    list_display = ['account','amount',"balance_after_transaction","transactions_type","loan_approve","bank_rupt"]
     def save_model(self, request, obj, form, change):
         if obj.loan_approve:
             obj.account.balance += obj.amount

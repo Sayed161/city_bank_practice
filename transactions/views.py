@@ -6,13 +6,14 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.views.generic import CreateView,ListView,View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Transactions
-from .forms import DepositForm,WithdrawForm,LoanRequestForm
-from .constants import DEPOSITE,WITHDRAW,LOAN,LOAN_PAID
+from .forms import DepositForm,WithdrawForm,LoanRequestForm,SentForm
+from .constants import DEPOSITE,WITHDRAW,LOAN,LOAN_PAID,SENT_MONEY
 from django.contrib import messages
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.db.models import Sum
 from django.urls import reverse_lazy
+from accounts.models import UserBankAccount
 # Create your views here.
 
 
@@ -38,7 +39,7 @@ class TransactionalMixin(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self) :
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'account': self.request.user.accounts,
+            'account': self.request.user,
         })
         return kwargs
     
@@ -82,12 +83,15 @@ class WithdrawMoneyView(TransactionalMixin):
     def form_valid(self, form):
         amount = form.cleaned_data.get('amount')
         account = self.request.user.accounts
-        account.balance -= amount
-        account.save(
-            update_fields = ['balance']
-        )
-        messages.success(self.request,f"{amount}$ was withdrawn from your account successfully")
-        send_transaction_email(self.request.user, amount, "Withdraw Message", "withdraw_mail.html")
+        if not account.bank_rupt :
+            account.balance -= amount
+            account.save(
+                update_fields = ['balance']
+            )
+            messages.success(self.request,f"{amount}$ was withdrawn from your account successfully")
+            send_transaction_email(self.request.user, amount, "Withdraw Message", "withdraw_mail.html")
+        else:
+            messages.error(self.request,f"Bank has rupted you can't withdraw money")
         return super().form_valid(form)
     
 
@@ -165,3 +169,38 @@ class LoanlistView(LoginRequiredMixin,ListView):
         user_account = self.request.user.accounts
         queryset = Transactions.objects.filter(account = user_account, transactions_type = LOAN)
         return queryset
+    
+
+class SentMoneyView(TransactionalMixin):
+    form_class = SentForm
+    title = "Sent Money"
+
+    def get_initial(self):
+        initial = {'transactions_type':SENT_MONEY}
+        return initial
+    
+    def form_valid(self, form):
+        amount = form.cleaned_data.get('amount')
+        user_account = self.request.user.accounts
+        reciver_ac = self.request.POST.get('reciver')
+
+        try:
+            reciver_account = UserBankAccount.objects.get(account_no=reciver_ac)
+        except UserBankAccount.DoesNotExist:
+            return HttpResponse("Reciver account not found")
+        
+        if user_account.balance >= amount:
+                user_account.balance -= amount
+                user_account.save(
+                update_fields = ['balance']
+                )
+
+                reciver_account.balance += amount
+                reciver_account.save(
+                update_fields = ['balance']
+                )
+
+                messages.success(self.request,f"{amount} was sent to {reciver_ac} successfully")
+            
+        else:
+                messages.error(self.request,"you don't have sufficient balance to send")
